@@ -1,5 +1,31 @@
 // adding jsdom 
 const{JSDOM}=require('jsdom')
+
+ async function crawlPage(urlInput){
+    console.log(`actively crawling ${urlInput}`)
+    try {
+        const resp=await fetch(urlInput);
+
+        if(resp.status>399){
+            // server side error exit from the code
+            console.log(`server side error ${resp.status} on the url ${urlInput}`)
+            return
+        }
+        // check for valid html 
+        const type=resp.headers.get("content-type")
+        if(!type.includes("text/html")){
+            console.log(`Invalid HTML format ${type} on the url ${urlInput}`) 
+            return   
+        }
+        console.log(await resp.text())
+        
+         
+    } catch (error) {
+        console.log(`error in fetching the url ${error.message}`)
+    }
+    
+
+}
 function getURLfromHTML(htmlBody,baseURL){
     const URLarr=[];
     const element=new JSDOM(htmlBody);
@@ -43,5 +69,6 @@ function normalizeURL(url){
 
 module.exports={
     normalizeURL, 
-    getURLfromHTML
+    getURLfromHTML,
+    crawlPage
 }
