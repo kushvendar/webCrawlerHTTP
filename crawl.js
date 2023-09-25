@@ -1,30 +1,52 @@
 // adding jsdom 
 const{JSDOM}=require('jsdom')
 
- async function crawlPage(urlInput){
+ async function crawlPage(baseUrl,urlInput,page){
+    const baseURLobj=new URL(baseUrl)
+    const urlInputObj=new URL(urlInput)
+    if(baseURLobj.hostname!==urlInputObj.hostname){
+        return page
+    }
+    const urlVisit=normalizeURL(urlInput);
+    if(page[urlVisit]>0){
+        // already visited this url pages++
+        page[urlVisit]++
+        return page
+    }
+    page[urlVisit]=1;
+    
     console.log(`actively crawling ${urlInput}`)
+
     try {
         const resp=await fetch(urlInput);
 
         if(resp.status>399){
             // server side error exit from the code
             console.log(`server side error ${resp.status} on the url ${urlInput}`)
-            return
+            return page
         }
         // check for valid html 
         const type=resp.headers.get("content-type")
         if(!type.includes("text/html")){
             console.log(`Invalid HTML format ${type} on the url ${urlInput}`) 
-            return   
+            return page  
         }
-        console.log(await resp.text())
+    const html=await resp.text();
+    
+    const  nextURLs=getURLfromHTML(html,baseUrl)
+    for(nextURL of nextURLs){
+        page=await crawlPage(baseUrl,nextURL,page)
+    }
+
+    
+
         
          
     } catch (error) {
         console.log(`error in fetching the url ${error.message}`)
     }
     
-
+    return page
 }
 function getURLfromHTML(htmlBody,baseURL){
     const URLarr=[];

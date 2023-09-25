@@ -1,5 +1,5 @@
  const {crawlPage}= require('./crawl.js');
-function main(){
+async function main(){
     if(process.argv.length<3){
         console.log("no argument provided")
         console.log(process.argv)
@@ -15,6 +15,9 @@ function main(){
     const urlInput=process.argv[2];
     
     console.log(`start crawling ${urlInput}`)
-    crawlPage(urlInput)
+    const pages=await crawlPage(urlInput,urlInput,{})
+    for(const page of Object.entries(pages)){
+         console.log(page)
+    }
 }
 main()
